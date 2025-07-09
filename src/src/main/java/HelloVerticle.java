@@ -10,7 +10,7 @@ public class HelloVerticle extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) {
         vertx.createHttpServer()
-                .requestHandler(req -> req.response().end("Welcome to Vert.x Intro"))
+                .requestHandler(req -> req.response().end("Welcome to Vert.x"))
                 .listen(config().getInteger("http.port", 9090), result -> {
                     if (result.succeeded()) {
                         LOGGER.info("HTTP server started on port {}", result.result().actualPort());

@@ -1,8 +1,11 @@
+import java.util.List;
+
 public class Client {
 
     private Long id;
     private String name;
     private String phoneNumber;
+    private List<Address> addresses;
 
     public Long getId() {
         return id;
@@ -26,5 +29,13 @@ public class Client {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public List<Address> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<Address> addresses) {
+        this.addresses = addresses;
     }
 }

@@ -1,11 +1,11 @@
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,14 +18,11 @@ public class Server extends AbstractVerticle {
 
         Router router = Router.router(vertx);
 
-        /*router.route("/").handler(routingContext -> {
-            HttpServerResponse response = routingContext.response();
-            response.putHeader("content-type", "text/html").end("<h1>First server with vertx</h1>");
-        });*/
+        router.route("/api/*").handler(BodyHandler.create());
 
-        router.route("/api/client*").handler(BodyHandler.create());
         router.post("/api/client").handler(this::addClient);
         router.get("/api/clients").handler(this::getAllClients);
+        router.post("/api/address/:clientId").handler(this::addAddress);
 
         vertx.createHttpServer().requestHandler(router::accept).listen(config().getInteger("http.port", 9000),
             result -> {
@@ -60,5 +57,31 @@ public class Server extends AbstractVerticle {
     private void getAllClients(RoutingContext routingContext) {
         routingContext.response().putHeader("content-type", "application/json; charset=utf-8")
                 .end(Json.encodePrettily(clients.values()));
+    }
+
+    private void addAddress(RoutingContext routingContext) {
+        String clientIdStr = routingContext.pathParam("clientId");
+        Long clientId = Long.valueOf(clientIdStr);
+
+        Client client = clients.get(clientId);
+        if (client == null) {
+            routingContext.response()
+                    .setStatusCode(404)
+                    .end("Client not found");
+            return;
+        }
+
+        Address address = Json.decodeValue(routingContext.getBodyAsString(), Address.class);
+
+        if (client.getAddresses() == null) {
+            client.setAddresses(new ArrayList<>());
+        }
+
+        client.getAddresses().add(address);
+
+        routingContext.response()
+                .setStatusCode(200)
+                .putHeader("content-type", "application/json; charset=utf-8")
+                .end(Json.encodePrettily(client));
     }
 }
